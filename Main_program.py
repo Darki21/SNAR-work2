@@ -179,7 +179,7 @@ for _ in range(10):
             real_pos[(real_pos_buf[1]-u[1]-1) % len(p)][(real_pos_buf[0]-u[0]-1) % len(p)] = 1
     else:
         real_pos[(real_pos_buf[1]-u[1]) % len(p)][(real_pos_buf[0]-u[0]) % len(p)] = 1
-    #вывод 
+
     print(p, sep='\n')
     print('------------------')
     print(real_pos, sep='\n')

@@ -499,10 +499,9 @@ label_status.grid(row=2, column=0)
 frame_matrix = ttk.LabelFrame(root,
                               text="Матрица распределени вероятностей",
                               relief=tk.SOLID)
-print('!!!!!',frame_matrix)
+
 canvas_matrix = tk.Canvas(frame_matrix, width=field_x * tile_size_x, height=field_y * tile_size_y)
 canvas_matrix.pack()
-print('!!!!!',canvas_matrix)
 
 # поле с роботом
 frame_world = ttk.LabelFrame(root,

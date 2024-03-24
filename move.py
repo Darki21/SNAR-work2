@@ -22,20 +22,20 @@ def move(p, U):
         p_buf = []
         for j in range(len(p[i])):
 
-            s = round(pExact * p[(i - U[1]) % len(p)][(j - U[0]) % len(p[i])], 3)
+            s = pExact * p[(i - U[1]) % len(p)][(j - U[0]) % len(p[i])]
             # Проверки для понимания куда мы сместились и расчет соответствующий вероятностей(можно сделать лучше)
             # Если двжемся по оси У
             if U[0] == 0:
-                s += round(pOvershoot * p[(i - U[1] - 1) % len(p)][(j - U[0]) % len(p)], 3)
-                s += round(pUndershoot * p[(i - U[1] + 1) % len(p)][(j - U[0]) % len(p)], 3)
+                s += pOvershoot * p[(i - U[1] - 1) % len(p)][(j - U[0]) % len(p)]
+                s += pUndershoot * p[(i - U[1] + 1) % len(p)][(j - U[0]) % len(p)]
             # Если двжемся по оси Х
             if U[1] == 0:
-                s += round(pOvershoot * p[(i - U[1]) % len(p)][(j - U[0] - 1) % len(p)], 3)
-                s += round(pUndershoot * p[(i - U[1]) % len(p)][(j - U[0] + 1) % len(p)], 3)
+                s += pOvershoot * p[(i - U[1]) % len(p)][(j - U[0] - 1) % len(p)]
+                s += pUndershoot * p[(i - U[1]) % len(p)][(j - U[0] + 1) % len(p)]
             # Если двжемся по диагонали
             if U[1] != 0 and U[0] != 0:
-                s += round(pOvershoot * p[(i - U[1] - 1) % len(p)][(j - U[0] - 1) % len(p)], 3)
-                s += round(pUndershoot * p[(i - U[1] + 1) % len(p)][(j - U[0] + 1) % len(p)], 3)
-            p_buf.append(s)
+                s += pOvershoot * p[(i - U[1] - 1) % len(p)][(j - U[0] - 1) % len(p)]
+                s += pUndershoot * p[(i - U[1] + 1) % len(p)][(j - U[0] + 1) % len(p)]
+            p_buf.append(round(s, 4))
         p_new.append(p_buf)
     return p_new

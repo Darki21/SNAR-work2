@@ -78,12 +78,12 @@ def update_field_size_columns_down():
 
 
 # probability matrix
-def generate_new_probability_matrix(x, y, p, tile_x, tile_y):
+def generate_new_probability_matrix(rows, columns, p, tile_x, tile_y):
     """
     Отрисовывает матрицу вероятностей.
 
-    :param x: размер поля (ширина)
-    :param y: размер поля (высота)
+    :param rows: кол-во строк
+    :param columns: кол-во столбцов
     :param p: матрица распределения вероятностей
     :param tile_x: размер клетки матрицы (ширина)
     :param tile_y: размер клетки матрицы (высота)
@@ -92,8 +92,8 @@ def generate_new_probability_matrix(x, y, p, tile_x, tile_y):
 
     tile_pos_x = 0
     tile_pos_y = 0
-    for i in range(x):
-        for j in range(y):
+    for i in range(rows):
+        for j in range(columns):
             # draw empty tile
             canvas_matrix.create_rectangle(tile_pos_x,
                                            tile_pos_y,
@@ -112,12 +112,12 @@ def generate_new_probability_matrix(x, y, p, tile_x, tile_y):
 
 
 # world map
-def generate_new_world_map(x, y, c, tile_x, tile_y):
+def generate_new_world_map(rows, columns, c, tile_x, tile_y):
     """
     Отрисовывает карту мира.
 
-    :param x: размер поля (ширина)
-    :param y: размер поля (высота)
+    :param rows: кол-во строк
+    :param columns: кол-во столбцов
     :param c: карта распределения цвета
     :param tile_x: размер клетки поля (ширина)
     :param tile_y: размер клетки поля (высота)
@@ -126,8 +126,8 @@ def generate_new_world_map(x, y, c, tile_x, tile_y):
 
     tile_pos_x = 0
     tile_pos_y = 0
-    for i in range(x):
-        for j in range(y):
+    for i in range(rows):
+        for j in range(columns):
             # select colour
             if c[i][j] == 'r':
                 tile_colour = "red"
@@ -182,22 +182,27 @@ def refresh(tile_x, tile_y):
     global position
 
     print("ОБНОВЛЕНИЕ ПОЛЯ")
-    x = int(stringvar_field_rows.get())
-    y = int(stringvar_field_columns.get())
+    # порядок позиции робота: X x Y
+    x = int(stringvar_field_columns.get())  # потому что ширина
+    y = int(stringvar_field_rows.get())  # потому что высота
+    # как задаётся размер матриц: ROWS x COLUMNS
+    # созданные выше x и y не используются, чтобы было наглядно
+    rows = int(stringvar_field_rows.get())
+    columns = int(stringvar_field_columns.get())
     # start position (x, y) (indexes of the tile)
-    position = generate_random_start_position(y, x)
+    position = generate_random_start_position(rows, columns)
     print("Где заспавнился робот: ", position[0], ";", position[1])
     # probability matrix
-    probability = field_generate_start_probabilities(x, y)
+    probability = field_generate_start_probabilities(rows, columns)
     print("Новая сгенерированная матрица: ")
-    print_matrix(probability, x, y)
+    print_matrix(probability, rows, columns)
     # colour map
-    colour_map = field_generate_colour(x, y)
+    colour_map = field_generate_colour(rows, columns)
     print("Новая цветовая карта: ")
-    print_matrix(colour_map, x, y)
+    print_matrix(colour_map, rows, columns)
 
     canvas_world.delete("all")
-    generate_new_world_map(x, y, colour_map, tile_x, tile_y)
+    generate_new_world_map(rows, columns, colour_map, tile_x, tile_y)
     put_robot_in_the_world(position, tile_x, tile_y)
 
     message = take_system_time()
@@ -206,7 +211,7 @@ def refresh(tile_x, tile_y):
     stringvar_events.set(message)
 
     canvas_matrix.delete("all")
-    generate_new_probability_matrix(x, y, probability, tile_x, tile_y)
+    generate_new_probability_matrix(rows, columns, probability, tile_x, tile_y)
 
 
 # sensors
@@ -228,6 +233,8 @@ def refresh_sense_data():
 
     sense_chance = random()
     # NB сначала выбирается СТРОКА, потом ЭЛЕМЕНТ В СТРОКЕ
+    # номер строки = ВЫСОТА = y = position[1]
+    # номер элемента в строке (номер столбца) = ШИРИНА = x = position[0]
     sensor_measurement = colour_map[position[1]][position[0]]
 
     # в зависимости от шанса решаем, датчик нам показал правду (не меняем sensor_measurement) или соврал
@@ -254,7 +261,7 @@ def refresh_sense_data():
     probability = sense(probability, sensor_measurement, colour_map)
     print("Обновлённая матрица распределения вероятностей:")
     print(probability)
-    generate_new_probability_matrix(int(stringvar_field_rows.get()), int(stringvar_field_columns.get()), probability,
+    generate_new_probability_matrix(int(stringvar_field_columns.get()), int(stringvar_field_rows.get()), probability,
                                     tile_size_x, tile_size_y)
     root.after(4000, refresh_sense_data)
 
@@ -264,7 +271,7 @@ def step_up():
     """
     Принимает управляющее воздействие со стороны пользователя (робот идёт вверх).
 
-    :return:
+    :return: None
     """
 
     global probability
@@ -350,7 +357,7 @@ def step_down():
     """
     Принимает управляющее воздействие со стороны пользователя (робот идёт вниз).
 
-    :return:
+    :return: None
     """
 
     global probability
@@ -428,7 +435,7 @@ def step_left():
     """
     Принимает управляющее воздействие со стороны пользователя (робот идёт влево).
 
-    :return:
+    :return: None
     """
 
     global probability
@@ -508,7 +515,7 @@ def step_right():
     """
     Принимает управляющее воздействие со стороны пользователя (робот идёт вправо).
 
-    :return:
+    :return: None
     """
 
     global probability

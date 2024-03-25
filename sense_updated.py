@@ -1,6 +1,8 @@
-def sense(p, Z, world):
+def sense(p, Z, world, pHit = 0.6, pMiss = 0.2):
     """
     Вычисляет апосториорную(инфа псоле полчуния показания с датчиков) матрицу вероятности
+    pHit: Вероятность верного срабатывания датчика
+    pMiss: Вероятность ложного срабатывания датчика
     p: двумереый массив nxn с плотностью распределения
     Z: Показание с датчика в виде одной буквы
     return: матрицу с новой вероятностью нахожедния робота в той или иной клетке
@@ -9,8 +11,7 @@ def sense(p, Z, world):
     p_new   = []
     p_buf   = []
     buf_sum = []
-    pHit    = 0.6
-    pMiss   = 0.2
+    
 
     for i in range(len(p)):
         p_buf = []
@@ -27,4 +28,6 @@ def sense(p, Z, world):
     for i in range(len(p)):
         for j in range(len(p[i])):
             p_new[i][j] = round(p_new[i][j]/totla_sum, 3)
+
+    
     return p_new

@@ -15,7 +15,7 @@ from move import move
 # change field size
 def update_field_size_x_up():
     """
-    Принимает изменения размера поля со стороны пользователя.
+    Вызывается при изменении размера поля со стороны пользователя.
 
     :param: None
     :return: None
@@ -30,7 +30,7 @@ def update_field_size_x_up():
 
 def update_field_size_x_down():
     """
-    Принимает изменения размера поля со стороны пользователя.
+    Вызывается при изменении размера поля со стороны пользователя.
 
     :param: None
     :return: None
@@ -45,7 +45,7 @@ def update_field_size_x_down():
 
 def update_field_size_y_up():
     """
-    Принимает изменения размера поля со стороны пользователя.
+    Вызывается при изменении размера поля со стороны пользователя.
 
     :param: None
     :return: None
@@ -60,7 +60,7 @@ def update_field_size_y_up():
 
 def update_field_size_y_down():
     """
-    Принимает изменения размера поля со стороны пользователя.
+    Вызывается при изменении размера поля со стороны пользователя.
 
     :param: None
     :return: None
@@ -211,10 +211,11 @@ def refresh_sense_data():
 
     # NB сначала выбирается СТРОКА, потом ЭЛЕМЕНТ В СТРОКЕ
     sensor_measurement = colour_map[position[1]][position[0]]
-    print("Зритель видит, что робот стоит на клетке с индексами: ", position[0], "; ", position[1])
+    print("Зритель видит, что робот стоит на клетке с индексами: ", position[0]+1, "; ", position[1]+1)
     print("Показание датчика: ", sensor_measurement)
     # пересчёт матрицы распределения вероятностей
     probability = sense(probability, sensor_measurement, colour_map)
+    
     print("Обновлённая матрица распределения вероятностей:")
     print(probability)
     generate_new_probability_matrix(int(stringvar_field_x.get()), int(stringvar_field_y.get()), probability,
@@ -250,7 +251,7 @@ def step_up():
     generate_new_probability_matrix(int(stringvar_field_x.get()),int(stringvar_field_y.get()),
                                     probability, tile_size_x, tile_size_y)
 
-    print("Зритель видит, что робот встал на позицию ", position[0], ";", position[1])
+    print("Зритель видит, что робот встал на позицию ", position[0]+1, ";", position[1]+1)
     print("Обновлённая матрица вероятностей: ")
     print(probability)
 
@@ -282,7 +283,7 @@ def step_down():
     generate_new_probability_matrix(int(stringvar_field_x.get()), int(stringvar_field_y.get()),
                                     probability, tile_size_x, tile_size_y)
 
-    print("Зритель видит, что робот встал на позицию ", position[0], ";", position[1])
+    print("Зритель видит, что робот встал на позицию ", position[0]+1, ";", position[1]+1)
     print("Обновлённая матрица вероятностей: ")
     print(probability)
 
@@ -314,7 +315,7 @@ def step_left():
     generate_new_probability_matrix(int(stringvar_field_x.get()), int(stringvar_field_y.get()),
                                     probability, tile_size_x, tile_size_y)
 
-    print("Зритель видит, что робот встал на позицию ", position[0], ";", position[1])
+    print("Зритель видит, что робот встал на позицию ", position[0]+1, ";", position[1]+1)
     print("Обновлённая матрица вероятностей: ")
     print(probability)
 
@@ -346,7 +347,7 @@ def step_right():
     generate_new_probability_matrix(int(stringvar_field_x.get()), int(stringvar_field_y.get()),
                                     probability, tile_size_x, tile_size_y)
 
-    print("Зритель видит, что робот встал на позицию ", position[0], ";", position[1])
+    print("Зритель видит, что робот встал на позицию ", position[0]+1, ";", position[1]+1)
     print("Обновлённая матрица вероятностей: ")
     print(probability)
 

@@ -1,11 +1,15 @@
 import tkinter as tk
 from tkinter import ttk
 
+from random import random
+
 from field_generate_start_probabilities import field_generate_start_probabilities
 from field_generate_colour import field_generate_colour
 from print_matrix import print_matrix
 
 from generate_random_start_position import generate_random_start_position
+
+from take_system_time import take_system_time
 
 from sense_updated import sense
 from move import move
@@ -15,7 +19,7 @@ from move import move
 # change field size
 def update_field_size_x_up():
     """
-    Вызывается при изменении размера поля со стороны пользователя.
+    Увеличивает размер поля (высота).
 
     :param: None
     :return: None
@@ -30,7 +34,7 @@ def update_field_size_x_up():
 
 def update_field_size_x_down():
     """
-    Вызывается при изменении размера поля со стороны пользователя.
+    Уменьшает размер поля (высота).
 
     :param: None
     :return: None
@@ -45,7 +49,7 @@ def update_field_size_x_down():
 
 def update_field_size_y_up():
     """
-    Вызывается при изменении размера поля со стороны пользователя.
+    Увеличивает размер поля (ширина).
 
     :param: None
     :return: None
@@ -60,7 +64,7 @@ def update_field_size_y_up():
 
 def update_field_size_y_down():
     """
-    Вызывается при изменении размера поля со стороны пользователя.
+    Уменьшает размер поля (ширина).
 
     :param: None
     :return: None
@@ -180,7 +184,7 @@ def refresh(tile_x, tile_y):
     x = int(stringvar_field_x.get())
     y = int(stringvar_field_y.get())
     # start position (x, y) (indexes of the tile)
-    position = generate_random_start_position(x, y)
+    position = generate_random_start_position(y, x)
     print("Где заспавнился робот: ", position[0], ";", position[1])
     # probability matrix
     probability = field_generate_start_probabilities(x, y)
@@ -194,6 +198,11 @@ def refresh(tile_x, tile_y):
     canvas_world.delete("all")
     generate_new_world_map(x, y, colour_map, tile_x, tile_y)
     put_robot_in_the_world(position, tile_x, tile_y)
+
+    message = take_system_time()
+    message += ' '
+    message += event_cases["init"]
+    stringvar_events.set(message)
 
     canvas_matrix.delete("all")
     generate_new_probability_matrix(x, y, probability, tile_x, tile_y)
@@ -209,13 +218,39 @@ def refresh_sense_data():
 
     global probability
 
+    # учитывается то, что может быть успех, а может быть и нет
+    # шансы те же, что в sense
+    # успех
+    pHit = 0.6
+    # ложные срабатывания
+    pMiss = 0.2
+
+    sense_chance = random()
     # NB сначала выбирается СТРОКА, потом ЭЛЕМЕНТ В СТРОКЕ
     sensor_measurement = colour_map[position[1]][position[0]]
-    print("Зритель видит, что робот стоит на клетке с индексами: ", position[0]+1, "; ", position[1]+1)
+
+    # в зависимости от шанса решаем, датчик нам показал правду (не меняем sensor_measurement) или соврал
+    # (меняем sensor_measurement на противоположное)
+    if sense_chance < pHit:
+        if sensor_measurement == 'r':
+            sensor_measurement = 'g'
+        else:
+            sensor_measurement = 'r'
+
+    if sensor_measurement == 'r':
+        message = take_system_time()
+        message += ' '
+        message += event_cases["sense_red"]
+        stringvar_events.set(message)
+    else:
+        message = take_system_time()
+        message += ' '
+        message += event_cases["sense_green"]
+        stringvar_events.set(message)
+    print("Зритель видит, что робот стоит на клетке с индексами: ", position[0], "; ", position[1])
     print("Показание датчика: ", sensor_measurement)
     # пересчёт матрицы распределения вероятностей
     probability = sense(probability, sensor_measurement, colour_map)
-    
     print("Обновлённая матрица распределения вероятностей:")
     print(probability)
     generate_new_probability_matrix(int(stringvar_field_x.get()), int(stringvar_field_y.get()), probability,
@@ -237,6 +272,69 @@ def step_up():
     canvas_world.delete("robot")
     canvas_matrix.delete("all")
 
+    # учёт того, что может быть либо успех, либо неуспех; 2 случая неуспеха: оставлись на месте, переместились на 2
+    # шансы те же что в функции move
+    pExact = 0.8
+    # pOvershoot = 0.1
+    # pUndershoot = 0.1
+
+    # шанс -- это не получка и не аванс
+    movement_chance = random()
+
+    # успех
+    if movement_chance >= pExact:
+        u = shift_cases["up"]
+        position[0] += u[0]
+        position[1] += u[1]
+
+        if position[1] < 0:
+            position[1] = int(stringvar_field_y.get()) - 1
+
+        message = take_system_time()
+        message += ' '
+        message += event_cases["move_up_success"]
+        stringvar_events.set(message)
+
+    # NB тут проблема в том, что это покрытие частного случая,
+    # а как это сделать так, чтобы под общий случай подходило?
+    # неуспех
+    # надо выбрать, какой из двух неуспехов
+    # два варианта неуспеха равновероятны между собой, поэтом сравнение идёт с 0.5
+    else:
+
+        movement_chance = random()
+
+        # остались на месте
+        if movement_chance >= 0.5:
+            # не перемещаемся
+            u = shift_cases["none"]
+            message = take_system_time()
+            message += ' '
+            message += event_cases["move_up_fail_undershoot"]
+            stringvar_events.set(message)
+
+        # сместились на две клетки
+        else:
+            u = shift_cases["up"]
+            position[0] += u[0]
+            position[1] += u[1]
+
+            if position[1] < 0:
+                position[1] = int(stringvar_field_y.get()) - 1
+
+            u = shift_cases["up"]
+            position[0] += u[0]
+            position[1] += u[1]
+
+            if position[1] < 0:
+                position[1] = int(stringvar_field_y.get()) - 1
+
+            message = take_system_time()
+            message += ' '
+            message += event_cases["move_up_fail_overshoot"]
+            stringvar_events.set(message)
+
+    '''
     u = shift_cases["up"]
     position[0] += u[0]
     position[1] += u[1]
@@ -244,14 +342,15 @@ def step_up():
     # пересчёт, если вышли за границу
     if position[1] < 0:
         position[1] = int(stringvar_field_y.get()) - 1
+    '''
 
     probability = move(probability, u)
 
     put_robot_in_the_world(position, tile_size_x, tile_size_y)
-    generate_new_probability_matrix(int(stringvar_field_x.get()),int(stringvar_field_y.get()),
+    generate_new_probability_matrix(int(stringvar_field_x.get()), int(stringvar_field_y.get()),
                                     probability, tile_size_x, tile_size_y)
 
-    print("Зритель видит, что робот встал на позицию ", position[0]+1, ";", position[1]+1)
+    print("Зритель видит, что робот встал на позицию ", position[0], ";", position[1])
     print("Обновлённая матрица вероятностей: ")
     print(probability)
 
@@ -269,13 +368,59 @@ def step_down():
     canvas_world.delete("robot")
     canvas_matrix.delete("all")
 
-    u = shift_cases["down"]
-    position[0] += u[0]
-    position[1] += u[1]
+    pExact = 0.8
+    movement_chance = random()
 
-    # пересчёт, если вышли за границу
-    if position[1] == int(stringvar_field_y.get()):
-        position[1] = 0
+    # успех
+    if movement_chance >= pExact:
+        u = shift_cases["down"]
+        position[0] += u[0]
+        position[1] += u[1]
+
+        # пересчёт, если вышли за границу
+        if position[1] == int(stringvar_field_y.get()):
+            position[1] = 0
+
+        message = take_system_time()
+        message += ' '
+        message += event_cases["move_down_success"]
+        stringvar_events.set(message)
+
+    # неуспех
+    else:
+        movement_chance = random()
+
+        # остались на месте
+        if movement_chance <= 0.5:
+            # не перемещаемся
+            u = shift_cases["none"]
+            message = take_system_time()
+            message += ' '
+            message += event_cases["move_down_fail_undershoot"]
+            stringvar_events.set(message)
+
+        # сместились на две клетки
+        else:
+            u = shift_cases["down"]
+            position[0] += u[0]
+            position[1] += u[1]
+
+            # пересчёт, если вышли за границу
+            if position[1] == int(stringvar_field_y.get()):
+                position[1] = 0
+
+            u = shift_cases["down"]
+            position[0] += u[0]
+            position[1] += u[1]
+
+            # пересчёт, если вышли за границу
+            if position[1] == int(stringvar_field_y.get()):
+                position[1] = 0
+
+            message = take_system_time()
+            message += ' '
+            message += event_cases["move_down_fail_overshoot"]
+            stringvar_events.set(message)
 
     probability = move(probability, u)
 
@@ -283,7 +428,7 @@ def step_down():
     generate_new_probability_matrix(int(stringvar_field_x.get()), int(stringvar_field_y.get()),
                                     probability, tile_size_x, tile_size_y)
 
-    print("Зритель видит, что робот встал на позицию ", position[0]+1, ";", position[1]+1)
+    print("Зритель видит, что робот встал на позицию ", position[0], ";", position[1])
     print("Обновлённая матрица вероятностей: ")
     print(probability)
 
@@ -301,13 +446,61 @@ def step_left():
     canvas_world.delete("robot")
     canvas_matrix.delete("all")
 
-    u = shift_cases["left"]
-    position[0] += u[0]
-    position[1] += u[1]
+    pExact = 0.8
+    movement_chance = random()
 
-    # пересчёт, если вышли за границу
-    if position[0] < 0:
-        position[0] = int(stringvar_field_x.get()) - 1
+    # успех
+    if movement_chance >= pExact:
+
+        u = shift_cases["left"]
+        position[0] += u[0]
+        position[1] += u[1]
+
+        # пересчёт, если вышли за границу
+        if position[0] < 0:
+            position[0] = int(stringvar_field_x.get()) - 1
+
+        message = take_system_time()
+        message += ' '
+        message += event_cases["move_left_success"]
+        stringvar_events.set(message)
+
+    # неуспех
+    else:
+        movement_chance = random()
+
+        # остались на месте
+        if movement_chance <= 0.5:
+            # не перемещаемся
+            u = shift_cases["none"]
+            message = take_system_time()
+            message += ' '
+            message += event_cases["move_left_fail_undershoot"]
+            stringvar_events.set(message)
+
+        # сместились на две клетки
+        else:
+
+            u = shift_cases["left"]
+            position[0] += u[0]
+            position[1] += u[1]
+
+            # пересчёт, если вышли за границу
+            if position[0] < 0:
+                position[0] = int(stringvar_field_x.get()) - 1
+
+            u = shift_cases["left"]
+            position[0] += u[0]
+            position[1] += u[1]
+
+            # пересчёт, если вышли за границу
+            if position[0] < 0:
+                position[0] = int(stringvar_field_x.get()) - 1
+
+            message = take_system_time()
+            message += ' '
+            message += event_cases["move_left_fail_overshoot"]
+            stringvar_events.set(message)
 
     probability = move(probability, u)
 
@@ -315,7 +508,7 @@ def step_left():
     generate_new_probability_matrix(int(stringvar_field_x.get()), int(stringvar_field_y.get()),
                                     probability, tile_size_x, tile_size_y)
 
-    print("Зритель видит, что робот встал на позицию ", position[0]+1, ";", position[1]+1)
+    print("Зритель видит, что робот встал на позицию ", position[0], ";", position[1])
     print("Обновлённая матрица вероятностей: ")
     print(probability)
 
@@ -333,13 +526,61 @@ def step_right():
     canvas_world.delete("robot")
     canvas_matrix.delete("all")
 
-    u = shift_cases["right"]
-    position[0] += u[0]
-    position[1] += u[1]
+    pExact = 0.8
+    movement_chance = random()
 
-    # пересчёт, если вышли за границу
-    if position[0] == int(stringvar_field_x.get()):
-        position[0] = 0
+    # успех
+    if movement_chance >= pExact:
+
+        u = shift_cases["right"]
+        position[0] += u[0]
+        position[1] += u[1]
+
+        # пересчёт, если вышли за границу
+        if position[0] == int(stringvar_field_x.get()):
+            position[0] = 0
+
+        message = take_system_time()
+        message += ' '
+        message += event_cases["move_right_success"]
+        stringvar_events.set(message)
+
+    # неуспех
+    else:
+        movement_chance = random()
+
+        # остались на месте
+        if movement_chance <= 0.5:
+            # не перемещаемся
+            u = shift_cases["none"]
+            message = take_system_time()
+            message += ' '
+            message += event_cases["move_right_fail_undershoot"]
+            stringvar_events.set(message)
+
+        # сместились на две клетки
+        else:
+
+            u = shift_cases["right"]
+            position[0] += u[0]
+            position[1] += u[1]
+
+            # пересчёт, если вышли за границу
+            if position[0] == int(stringvar_field_x.get()):
+                position[0] = 0
+
+            u = shift_cases["right"]
+            position[0] += u[0]
+            position[1] += u[1]
+
+            # пересчёт, если вышли за границу
+            if position[0] == int(stringvar_field_x.get()):
+                position[0] = 0
+
+            message = take_system_time()
+            message += ' '
+            message += event_cases["move_right_fail_overshoot"]
+            stringvar_events.set(message)
 
     probability = move(probability, u)
 
@@ -347,16 +588,38 @@ def step_right():
     generate_new_probability_matrix(int(stringvar_field_x.get()), int(stringvar_field_y.get()),
                                     probability, tile_size_x, tile_size_y)
 
-    print("Зритель видит, что робот встал на позицию ", position[0]+1, ";", position[1]+1)
+    print("Зритель видит, что робот встал на позицию ", position[0], ";", position[1])
     print("Обновлённая матрица вероятностей: ")
     print(probability)
 
 
+# possible events
+event_cases = {"init": "Симуляция запущена. Локация обновлена. Робот появился в случайном месте.",
+               "sense_red": "Опрос датчика. Робот считает, что он на красной клетке.",
+               "sense_green": "Опрос датчика. Робот считает, что он на зелёной клетке.",
+
+               "move_up_success": "Следующий шаг траектории -- вверх. Успех",
+               "move_up_fail_undershoot": "Следующий шаг траектории -- вверх. Неудача. Робот на месте.",
+               "move_up_fail_overshoot": "Следующий шаг траектории -- вверх. Неудача. Лишний шаг.",
+
+               "move_down_success": "Следующий шаг траектории -- вниз. Успех",
+               "move_down_fail_undershoot": "Следующий шаг траектории -- вниз. Неудача. Робот на месте.",
+               "move_down_fail_overshoot": "Следующий шаг траектории -- вниз. Неудача. Лишний шаг.",
+
+               "move_right_success": "Следующий шаг траектории -- вправо. Успех",
+               "move_right_fail_undershoot": "Следующий шаг траектории -- вправо. Неудача. Робот на месте.",
+               "move_right_fail_overshoot": "Следующий шаг траектории -- вправо. Неудача. Лишний шаг.",
+
+               "move_left_success": "Следующий шаг траектории -- влево. Успех",
+               "move_left_fail_undershoot": "Следующий шаг траектории -- влево. Неудача. Робот на месте.",
+               "move_left_fail_overshoot": "Следующий шаг траектории -- влево. Неудача. Лишний шаг."
+               }
 # shift cases
 shift_cases = {"up": [0, -1],
                "down": [0, 1],
                "left": [-1, 0],
-               "right": [1, 0]}
+               "right": [1, 0],
+               "none": [0, 0]}
 # create field
 # size
 field_x = 12
@@ -479,13 +742,17 @@ button_left.grid(row=1, column=0)
 button_right.grid(row=1, column=2)
 
 # messages
+stringvar_events = tk.StringVar(value=event_cases["init"])
+label_events = tk.Label(frame_events_messages,
+                        textvariable=stringvar_events)
+label_events.grid(row=0, column=0)
 
 # place frames
-frame_options.grid(row=0, column=0)
-frame_matrix.grid(row=0, column=1)
-frame_world.grid(row=0, column=2)
-frame_controls.grid(row=0, column=3)
-frame_events_messages.grid(row=0, column=4)
+frame_options.grid(row=1, column=0)
+frame_matrix.grid(row=0, column=0)
+frame_world.grid(row=0, column=1)
+frame_controls.grid(row=1, column=1)
+frame_events_messages.grid(row=2, column=0)
 
 refresh_sense_data()
 root.mainloop()

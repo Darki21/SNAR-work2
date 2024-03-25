@@ -231,7 +231,7 @@ def refresh_sense_data():
 
     # в зависимости от шанса решаем, датчик нам показал правду (не меняем sensor_measurement) или соврал
     # (меняем sensor_measurement на противоположное)
-    if sense_chance < pHit:
+    if sense_chance > pHit:
         if sensor_measurement == 'r':
             sensor_measurement = 'g'
         else:
@@ -282,7 +282,7 @@ def step_up():
     movement_chance = random()
 
     # успех
-    if movement_chance >= pExact:
+    if movement_chance < pExact:
         u = shift_cases["up"]
         position[0] += u[0]
         position[1] += u[1]
@@ -362,7 +362,7 @@ def step_down():
     movement_chance = random()
 
     # успех
-    if movement_chance >= pExact:
+    if movement_chance < pExact:
         u = shift_cases["down"]
         position[0] += u[0]
         position[1] += u[1]
@@ -440,7 +440,7 @@ def step_left():
     movement_chance = random()
 
     # успех
-    if movement_chance >= pExact:
+    if movement_chance < pExact:
 
         u = shift_cases["left"]
         position[0] += u[0]
@@ -520,7 +520,7 @@ def step_right():
     movement_chance = random()
 
     # успех
-    if movement_chance >= pExact:
+    if movement_chance < pExact:
 
         u = shift_cases["right"]
         position[0] += u[0]

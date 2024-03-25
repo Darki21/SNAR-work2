@@ -11,7 +11,7 @@ def sense(p, Z, world, pHit = 0.6, pMiss = 0.2):
     p_new   = []
     p_buf   = []
     buf_sum = []
-    
+
 
     for i in range(len(p)):
         p_buf = []

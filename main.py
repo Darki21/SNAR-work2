@@ -334,16 +334,6 @@ def step_up():
             message += event_cases["move_up_fail_overshoot"]
             stringvar_events.set(message)
 
-    '''
-    u = shift_cases["up"]
-    position[0] += u[0]
-    position[1] += u[1]
-
-    # пересчёт, если вышли за границу
-    if position[1] < 0:
-        position[1] = int(stringvar_field_y.get()) - 1
-    '''
-
     probability = move(probability, u)
 
     put_robot_in_the_world(position, tile_size_x, tile_size_y)

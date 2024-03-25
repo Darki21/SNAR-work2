@@ -17,64 +17,64 @@ from move import move
 
 # options
 # change field size
-def update_field_size_x_up():
+def update_field_size_rows_up():
     """
     Увеличивает размер поля (высота).
 
     :param: None
     :return: None
     """
-    x = int(stringvar_field_x.get())
+    y = int(stringvar_field_rows.get())
     # ограничение: до 12 клеток
-    if x < 12:
-        x += 1
-    stringvar_field_x.set(str(x))
-    print("Новые размеры: ", stringvar_field_x.get(), " на ", stringvar_field_y.get())
+    if y < 12:
+        y += 1
+    stringvar_field_rows.set(str(y))
+    print("Новые размеры: ", stringvar_field_rows.get(), " на ", stringvar_field_columns.get())
 
 
-def update_field_size_x_down():
+def update_field_size_rows_down():
     """
     Уменьшает размер поля (высота).
 
     :param: None
     :return: None
     """
-    x = int(stringvar_field_x.get())
+    y = int(stringvar_field_rows.get())
     # ограничение: не менее 2 клеток
-    if x > 2:
-        x -= 1
-    stringvar_field_x.set(str(x))
-    print("Новые размеры: ", stringvar_field_x.get(), " на ", stringvar_field_y.get())
+    if y > 2:
+        y -= 1
+    stringvar_field_rows.set(str(y))
+    print("Новые размеры: ", stringvar_field_rows.get(), " на ", stringvar_field_columns.get())
 
 
-def update_field_size_y_up():
+def update_field_size_y_columns():
     """
     Увеличивает размер поля (ширина).
 
     :param: None
     :return: None
     """
-    y = int(stringvar_field_y.get())
+    x = int(stringvar_field_columns.get())
     # ограничение: до 12 клеток
-    if y < 12:
-        y += 1
-    stringvar_field_y.set(str(y))
-    print("Новые размеры: ", stringvar_field_x.get(), " на ", stringvar_field_y.get())
+    if x < 12:
+        x += 1
+    stringvar_field_columns.set(str(x))
+    print("Новые размеры: ", stringvar_field_rows.get(), " на ", stringvar_field_columns.get())
 
 
-def update_field_size_y_down():
+def update_field_size_columns_down():
     """
     Уменьшает размер поля (ширина).
 
     :param: None
     :return: None
     """
-    y = int(stringvar_field_y.get())
+    x = int(stringvar_field_columns.get())
     # ограничение: не менее 2 клеток
-    if y > 2:
-        y -= 1
-    stringvar_field_y.set(str(y))
-    print("Новые размеры: ", stringvar_field_x.get(), " на ", stringvar_field_y.get())
+    if x > 2:
+        x -= 1
+    stringvar_field_columns.set(str(x))
+    print("Новые размеры: ", stringvar_field_rows.get(), " на ", stringvar_field_columns.get())
 
 
 # probability matrix
@@ -123,6 +123,7 @@ def generate_new_world_map(x, y, c, tile_x, tile_y):
     :param tile_y: размер клетки поля (высота)
     :return: None
     """
+
     tile_pos_x = 0
     tile_pos_y = 0
     for i in range(x):
@@ -171,8 +172,8 @@ def refresh(tile_x, tile_y):
     """
     Вызывает функции для обновления карты мира, положения робота на новой карте и матрицы распределения вероятностей.
 
-    :param tile_x:
-    :param tile_y:
+    :param tile_x: размер клетки (ширина)
+    :param tile_y: размер клетки (высота)
     :return: None
     """
 
@@ -181,8 +182,8 @@ def refresh(tile_x, tile_y):
     global position
 
     print("ОБНОВЛЕНИЕ ПОЛЯ")
-    x = int(stringvar_field_x.get())
-    y = int(stringvar_field_y.get())
+    x = int(stringvar_field_rows.get())
+    y = int(stringvar_field_columns.get())
     # start position (x, y) (indexes of the tile)
     position = generate_random_start_position(y, x)
     print("Где заспавнился робот: ", position[0], ";", position[1])
@@ -253,7 +254,7 @@ def refresh_sense_data():
     probability = sense(probability, sensor_measurement, colour_map)
     print("Обновлённая матрица распределения вероятностей:")
     print(probability)
-    generate_new_probability_matrix(int(stringvar_field_x.get()), int(stringvar_field_y.get()), probability,
+    generate_new_probability_matrix(int(stringvar_field_rows.get()), int(stringvar_field_columns.get()), probability,
                                     tile_size_x, tile_size_y)
     root.after(4000, refresh_sense_data)
 
@@ -288,7 +289,7 @@ def step_up():
         position[1] += u[1]
 
         if position[1] < 0:
-            position[1] = int(stringvar_field_y.get()) - 1
+            position[1] = int(stringvar_field_rows.get()) - 1
 
         message = take_system_time()
         message += ' '
@@ -320,14 +321,14 @@ def step_up():
             position[1] += u[1]
 
             if position[1] < 0:
-                position[1] = int(stringvar_field_y.get()) - 1
+                position[1] = int(stringvar_field_rows.get()) - 1
 
             u = shift_cases["up"]
             position[0] += u[0]
             position[1] += u[1]
 
             if position[1] < 0:
-                position[1] = int(stringvar_field_y.get()) - 1
+                position[1] = int(stringvar_field_rows.get()) - 1
 
             message = take_system_time()
             message += ' '
@@ -337,7 +338,7 @@ def step_up():
     probability = move(probability, u)
 
     put_robot_in_the_world(position, tile_size_x, tile_size_y)
-    generate_new_probability_matrix(int(stringvar_field_x.get()), int(stringvar_field_y.get()),
+    generate_new_probability_matrix(int(stringvar_field_rows.get()), int(stringvar_field_columns.get()),
                                     probability, tile_size_x, tile_size_y)
 
     print("Зритель видит, что робот встал на позицию ", position[0], ";", position[1])
@@ -368,7 +369,7 @@ def step_down():
         position[1] += u[1]
 
         # пересчёт, если вышли за границу
-        if position[1] == int(stringvar_field_y.get()):
+        if position[1] == int(stringvar_field_rows.get()):
             position[1] = 0
 
         message = take_system_time()
@@ -396,7 +397,7 @@ def step_down():
             position[1] += u[1]
 
             # пересчёт, если вышли за границу
-            if position[1] == int(stringvar_field_y.get()):
+            if position[1] == int(stringvar_field_rows.get()):
                 position[1] = 0
 
             u = shift_cases["down"]
@@ -404,7 +405,7 @@ def step_down():
             position[1] += u[1]
 
             # пересчёт, если вышли за границу
-            if position[1] == int(stringvar_field_y.get()):
+            if position[1] == int(stringvar_field_rows.get()):
                 position[1] = 0
 
             message = take_system_time()
@@ -415,7 +416,7 @@ def step_down():
     probability = move(probability, u)
 
     put_robot_in_the_world(position, tile_size_x, tile_size_y)
-    generate_new_probability_matrix(int(stringvar_field_x.get()), int(stringvar_field_y.get()),
+    generate_new_probability_matrix(int(stringvar_field_rows.get()), int(stringvar_field_columns.get()),
                                     probability, tile_size_x, tile_size_y)
 
     print("Зритель видит, что робот встал на позицию ", position[0], ";", position[1])
@@ -448,7 +449,7 @@ def step_left():
 
         # пересчёт, если вышли за границу
         if position[0] < 0:
-            position[0] = int(stringvar_field_x.get()) - 1
+            position[0] = int(stringvar_field_columns.get()) - 1
 
         message = take_system_time()
         message += ' '
@@ -477,7 +478,7 @@ def step_left():
 
             # пересчёт, если вышли за границу
             if position[0] < 0:
-                position[0] = int(stringvar_field_x.get()) - 1
+                position[0] = int(stringvar_field_columns.get()) - 1
 
             u = shift_cases["left"]
             position[0] += u[0]
@@ -485,7 +486,7 @@ def step_left():
 
             # пересчёт, если вышли за границу
             if position[0] < 0:
-                position[0] = int(stringvar_field_x.get()) - 1
+                position[0] = int(stringvar_field_columns.get()) - 1
 
             message = take_system_time()
             message += ' '
@@ -495,7 +496,7 @@ def step_left():
     probability = move(probability, u)
 
     put_robot_in_the_world(position, tile_size_x, tile_size_y)
-    generate_new_probability_matrix(int(stringvar_field_x.get()), int(stringvar_field_y.get()),
+    generate_new_probability_matrix(int(stringvar_field_rows.get()), int(stringvar_field_columns.get()),
                                     probability, tile_size_x, tile_size_y)
 
     print("Зритель видит, что робот встал на позицию ", position[0], ";", position[1])
@@ -527,7 +528,7 @@ def step_right():
         position[1] += u[1]
 
         # пересчёт, если вышли за границу
-        if position[0] == int(stringvar_field_x.get()):
+        if position[0] == int(stringvar_field_columns.get()):
             position[0] = 0
 
         message = take_system_time()
@@ -556,7 +557,7 @@ def step_right():
             position[1] += u[1]
 
             # пересчёт, если вышли за границу
-            if position[0] == int(stringvar_field_x.get()):
+            if position[0] == int(stringvar_field_columns.get()):
                 position[0] = 0
 
             u = shift_cases["right"]
@@ -564,7 +565,7 @@ def step_right():
             position[1] += u[1]
 
             # пересчёт, если вышли за границу
-            if position[0] == int(stringvar_field_x.get()):
+            if position[0] == int(stringvar_field_columns.get()):
                 position[0] = 0
 
             message = take_system_time()
@@ -575,7 +576,7 @@ def step_right():
     probability = move(probability, u)
 
     put_robot_in_the_world(position, tile_size_x, tile_size_y)
-    generate_new_probability_matrix(int(stringvar_field_x.get()), int(stringvar_field_y.get()),
+    generate_new_probability_matrix(int(stringvar_field_rows.get()), int(stringvar_field_columns.get()),
                                     probability, tile_size_x, tile_size_y)
 
     print("Зритель видит, что робот встал на позицию ", position[0], ";", position[1])
@@ -612,22 +613,22 @@ shift_cases = {"up": [0, -1],
                "none": [0, 0]}
 # create field
 # size
-field_x = 12
-field_y = 12
+field_rows = 12
+field_columns = 12
 # tile size
 tile_size_x = 50
 tile_size_y = 50
 # start position (x, y) (indexes of the tile)
-position = generate_random_start_position(field_x, field_y)
+position = generate_random_start_position(field_columns, field_rows)
 print("Где заспавнился робот: ", position[0], ";", position[1])
 # probability matrix
-probability = field_generate_start_probabilities(field_x, field_y)
+probability = field_generate_start_probabilities(field_rows, field_columns)
 print("Сгенерированная матрица: ")
-print_matrix(probability, field_x, field_y)
+print_matrix(probability, field_rows, field_columns)
 # colour map
-colour_map = field_generate_colour(field_x, field_y)
+colour_map = field_generate_colour(field_rows, field_columns)
 print("Цветовая карта: ")
-print_matrix(colour_map, field_x, field_y)
+print_matrix(colour_map, field_rows, field_columns)
 
 # create main window
 root = tk.Tk()
@@ -651,63 +652,63 @@ frame_events_messages = ttk.LabelFrame(root,
                                        relief=tk.SOLID)
 
 # options
-stringvar_field_x = tk.StringVar(value=str(field_x))
-stringvar_field_y = tk.StringVar(value=str(field_y))
+stringvar_field_rows = tk.StringVar(value=str(field_rows))
+stringvar_field_columns = tk.StringVar(value=str(field_columns))
 
 frame_set_size = ttk.LabelFrame(frame_options,
                                 text="Задать размер поля",
                                 relief=tk.SOLID)
-button_up_x = tk.Button(frame_set_size,
-                        text="/\\",
-                        command=update_field_size_x_up)
-button_down_x = tk.Button(frame_set_size,
-                          text="\/",
-                          command=update_field_size_x_down)
+button_up_rows = tk.Button(frame_set_size,
+                           text="/\\",
+                           command=update_field_size_rows_up)
+button_down_rows = tk.Button(frame_set_size,
+                             text="\/",
+                             command=update_field_size_rows_down)
 
-label_x_size = tk.Label(frame_set_size,
-                        textvariable=stringvar_field_x)
+label_y_size = tk.Label(frame_set_size,
+                        textvariable=stringvar_field_rows)
 label_x = tk.Label(frame_set_size,
                    text=" x ")
 
-button_up_y = tk.Button(frame_set_size,
-                        text="/\\",
-                        command=update_field_size_y_up)
-button_down_y = tk.Button(frame_set_size,
-                          text="\/",
-                          command=update_field_size_y_down)
-label_y_size = tk.Label(frame_set_size,
-                        textvariable=stringvar_field_y)
+button_up_columns = tk.Button(frame_set_size,
+                              text="/\\",
+                              command=update_field_size_y_columns)
+button_down_columns = tk.Button(frame_set_size,
+                                text="\/",
+                                command=update_field_size_columns_down)
+label_x_size = tk.Label(frame_set_size,
+                        textvariable=stringvar_field_columns)
 
 button_confirm = tk.Button(frame_set_size,
                            text="Обновить симуляцию",
                            command=lambda tile_x=tile_size_x,
                                           tile_y=tile_size_y: refresh(tile_x, tile_y))
 
-button_up_x.grid(row=0, column=0)
-button_down_x.grid(row=2, column=0)
-label_x_size.grid(row=1, column=0)
+button_up_rows.grid(row=0, column=0)
+button_down_rows.grid(row=2, column=0)
+label_y_size.grid(row=1, column=0)
 
 label_x.grid(row=1, column=2)
 
-button_up_y.grid(row=0, column=3)
-button_down_y.grid(row=2, column=3)
-label_y_size.grid(row=1, column=3)
+button_up_columns.grid(row=0, column=3)
+button_down_columns.grid(row=2, column=3)
+label_x_size.grid(row=1, column=3)
 
 button_confirm.grid(row=3, column=2)
 
 frame_set_size.grid(row=0, column=0)
 
 # probability matrix
-canvas_matrix = tk.Canvas(frame_matrix, width=field_x * tile_size_x, height=field_y * tile_size_y)
+canvas_matrix = tk.Canvas(frame_matrix, width=field_rows * tile_size_x, height=field_columns * tile_size_y)
 canvas_matrix.pack()
 # initial matrix
-generate_new_probability_matrix(field_x, field_y, probability, tile_size_x, tile_size_y)
+generate_new_probability_matrix(field_rows, field_columns, probability, tile_size_x, tile_size_y)
 
 # world map
-canvas_world = tk.Canvas(frame_world, width=field_x * tile_size_x, height=field_y * tile_size_y)
+canvas_world = tk.Canvas(frame_world, width=field_rows * tile_size_x, height=field_columns * tile_size_y)
 canvas_world.pack()
 # initial world map
-generate_new_world_map(field_x, field_y, colour_map, tile_size_x, tile_size_y)
+generate_new_world_map(field_rows, field_columns, colour_map, tile_size_x, tile_size_y)
 
 # initial robot position
 put_robot_in_the_world(position, tile_size_x, tile_size_y)

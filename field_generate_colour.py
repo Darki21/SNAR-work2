@@ -15,10 +15,12 @@ def field_generate_colour(rows, columns):
         sub_list = list()
         for j in range(columns):
             random_number = random()
-            if random_number >= 0.5:
+            if random_number <= 0.45:
                 sub_list.append('r')
-            else:
+            elif random_number <= 0.9:
                 sub_list.append('g')
+            else:
+                sub_list.append('b')
         colour_map.append(sub_list)
 
     return colour_map

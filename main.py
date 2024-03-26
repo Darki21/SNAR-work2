@@ -194,7 +194,7 @@ def refresh(tile_x, tile_y):
     print("Где заспавнился робот: ", position[0], ";", position[1])
     # probability matrix
     probability = field_generate_start_probabilities(rows, columns)
-    print("Новая сгенерированная матрица: ")
+    print("Новая сгенерированная матрица вероятностей:")
     print_matrix(probability, rows, columns)
     # colour map
     colour_map = field_generate_colour(rows, columns)
@@ -260,9 +260,9 @@ def refresh_sense_data():
     # пересчёт матрицы распределения вероятностей
     probability = sense(probability, sensor_measurement, colour_map)
     print("Обновлённая матрица распределения вероятностей:")
-    print(probability)
-    generate_new_probability_matrix(int(stringvar_field_columns.get()), int(stringvar_field_rows.get()), probability,
+    generate_new_probability_matrix(int(stringvar_field_rows.get()), int(stringvar_field_columns.get()), probability,
                                     tile_size_x, tile_size_y)
+    print_matrix(probability, int(stringvar_field_rows.get()), int(stringvar_field_columns.get()))
     root.after(4000, refresh_sense_data)
 
 
@@ -626,7 +626,7 @@ field_columns = 12
 tile_size_x = 50
 tile_size_y = 50
 # start position (x, y) (indexes of the tile)
-position = generate_random_start_position(field_columns, field_rows)
+position = generate_random_start_position(field_rows, field_columns)
 print("Где заспавнился робот: ", position[0], ";", position[1])
 # probability matrix
 probability = field_generate_start_probabilities(field_rows, field_columns)

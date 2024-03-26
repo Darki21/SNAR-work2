@@ -1,30 +1,24 @@
 from random import random
-import numpy as np
 
 
-# поле с клетками, размер задан пользователем, раскидывает цвета по клеткам
-def field_generate_colour(x, y):
+def field_generate_colour(rows, columns):
     """
-    Распределяет случайным образом цвета (red, green) по клеткам.
+    Генерирует карту распределения цвета на матрицу размером (rows, columns) клеток
 
-    :param x: кол-во клеток в ширину
-    :param y: кол-во клеток в высоту
-
-    return field_colored: матрица, где каждой клетке поля сопоставлен цвет
+    :param rows: кол-во строк матрицы
+    :param columns: кол-во столбцов матрицы
+    :return colour_map: матрица размером (rows, columns) с отметками цвета (r или g)
     """
 
-    # инициализация field_colored
-    field_colored = np.empty((x, y), dtype=str)
-
-    # принцип генерации: береём случайное число, если оно равно или больше 0.5, то клетка красная
-    # в противном случае клетка зелёнка
-
-    for i in range(x):
-        for j in range(y):
+    colour_map = list()
+    for i in range(rows):
+        sub_list = list()
+        for j in range(columns):
             random_number = random()
             if random_number >= 0.5:
-                field_colored[i][j] = 'r'
+                sub_list.append('r')
             else:
-                field_colored[i][j] = 'g'
+                sub_list.append('g')
+        colour_map.append(sub_list)
 
-    return field_colored
+    return colour_map

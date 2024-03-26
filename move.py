@@ -2,6 +2,9 @@ def move(p, U, pExact = 0.8, pOvershoot = 0.1, pUndershoot = 0.1):
     """
     Реализация гипотетического движения с попыткой сохранить данные об окружении
 
+    pExact: Вероятнсть приехать в нужную клетку
+    pOvershoot: Вероятнсть перехать клетку
+    pUndershoot: Вероятнсть не доехать до клетки
     p: матрица nxn с плотностью вероятности
     U: массив из 2-х чисел 1-ое число смещение по х 2-ое число смещение по у
     pExact: вероятнсть правильного смещения 
@@ -19,24 +22,24 @@ def move(p, U, pExact = 0.8, pOvershoot = 0.1, pUndershoot = 0.1):
     p_buf = []
 
     # Такая реалиазция адекватно работает в ТОЛЬКО зациклином мире
-    for i in range(len(p)):
+    for y in range(len(p)):
         p_buf = []
-        for j in range(len(p[i])):
+        for x in range(len(p[y])):
 
-            s = round(pExact * p[(i - U[1]) % len(p)][(j - U[0]) % len(p[i])], 3)
+            s = pExact * p[(y - U[1]) % len(p)][(x - U[0]) % len(p[y])]
             # Проверки для понимания куда мы сместились и расчет соответствующий вероятностей(можно сделать лучше)
             # Если двжемся по оси У
             if U[0] == 0:
-                s += round(pOvershoot * p[(i - U[1] - 1) % len(p)][(j - U[0]) % len(p)], 3)
-                s += round(pUndershoot * p[(i - U[1] + 1) % len(p)][(j - U[0]) % len(p)], 3)
+                s += pOvershoot * p[(y - U[1] - 1) % len(p)][(x - U[0]) % len(p)]
+                s += pUndershoot * p[(y - U[1] + 1) % len(p)][(x - U[0]) % len(p)]
             # Если двжемся по оси Х
             if U[1] == 0:
-                s += round(pOvershoot * p[(i - U[1]) % len(p)][(j - U[0] - 1) % len(p)], 3)
-                s += round(pUndershoot * p[(i - U[1]) % len(p)][(j - U[0] + 1) % len(p)], 3)
+                s += pOvershoot * p[(y - U[1]) % len(p)][(x - U[0] - 1) % len(p[y])]
+                s += pUndershoot * p[(y - U[1]) % len(p)][(x - U[0] + 1) % len(p[y])]
             # Если двжемся по диагонали
             if U[1] != 0 and U[0] != 0:
-                s += round(pOvershoot * p[(i - U[1] - 1) % len(p)][(j - U[0] - 1) % len(p)], 3)
-                s += round(pUndershoot * p[(i - U[1] + 1) % len(p)][(j - U[0] + 1) % len(p)], 3)
-            p_buf.append(s)
+                s += pOvershoot * p[(y - U[1] - 1) % len(p)][(x - U[0] - 1) % len(p[y])]
+                s += pUndershoot * p[(y - U[1] + 1) % len(p)][(x - U[0] + 1) % len(p[y])]
+            p_buf.append(round(s, 4))
         p_new.append(p_buf)
     return p_new

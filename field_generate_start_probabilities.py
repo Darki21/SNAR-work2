@@ -1,24 +1,23 @@
-import numpy as np
-
-
-# поле с клетками, размер задан пользователем, раскидывает равномерную вероятность по всем клеткам
-def field_generate_start_probabilities(x, y):
+def field_generate_start_probabilities(rows, columns):
     """
-    Генерирует первую матричу распределения вероятностей (всё равномерно, потому что робот только заспавнился, а он не
-    знает, где именно, поэтому для начала он предполагает, что мог очутиться где угодно = в любой точке с одним и тем
-    же шансом)
+    Генерирует равномерное распределение для поля размером x на y клеток.
 
-    :param x: кол-во клеток в ширину
-    :param y: кол-во клеток в высоту
-    :return field_p: матрица распределения вероятностей
+    :param rows: кол-во строк матрицы
+    :param columns: кол-во столбцов матрицы
+    :return p: матрица размером (rows, columns) с равномерным распеределением вероятностей
     """
 
-    # инициализация field_p
-    field_p = np.empty((x, y), dtype=float)
-    # кол-во ячеек
-    number_of_tiles = x * y
-    for i in range(x):
-        for j in range(y):
-            # round -- чтобы не было длинных чисел, при отрисовке они плохо смотрятся
-            field_p[i][j] = round(1/number_of_tiles, 3)
-    return field_p
+    # вероятность попадания в клетку
+    # робот только заспавнился => он не может скзаать, где он => он в любой клетке может оказаться с одним шансом
+    # шанс = 1/общее кол-во клеток
+
+    number_of_tiles = rows * columns
+
+    p = list()
+    for i in range(rows):
+        sub_list = list()
+        for j in range(columns):
+            sub_list.append(round(1/number_of_tiles, 3))
+        p.append(sub_list)
+
+    return p

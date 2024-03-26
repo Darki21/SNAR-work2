@@ -160,25 +160,25 @@ for _ in range(10):
     if buf_random < 0.1:
         #Если двжемся по оси У 
         if u[0] == 0:
-            real_pos[(real_pos_buf[1]-u[1]+1) % len(p)][(real_pos_buf[0]-u[0]) % len(p)] = 1
+            real_pos[(real_pos_buf[1]-u[1]+1) % len(p)][(real_pos_buf[0]-u[0]) % len(p[0])] = 1
         #Если двжемся по оси Х
         if u[1] == 0:
-            real_pos[(real_pos_buf[1]-u[1]) % len(p)][(real_pos_buf[0]-u[0]+1) % len(p)] = 1
+            real_pos[(real_pos_buf[1]-u[1]) % len(p)][(real_pos_buf[0]-u[0]+1) % len(p[0])] = 1
         #Если двжемся по диагонали 
         if u[1] != 0 and u[0] != 0:
-            real_pos[(real_pos_buf[1]-u[1]+1) % len(p)][(real_pos_buf[0]-u[0]+1) % len(p)] = 1
+            real_pos[(real_pos_buf[1]-u[1]+1) % len(p)][(real_pos_buf[0]-u[0]+1) % len(p[0])] = 1
     elif buf_random >0.9:
         #Если двжемся по оси У 
         if u[0] == 0:
-            real_pos[(real_pos_buf[1]-u[1]-1) % len(p)][(real_pos_buf[0]-u[0]) % len(p)] = 1
+            real_pos[(real_pos_buf[1]-u[1]-1) % len(p)][(real_pos_buf[0]-u[0]) % len(p[0])] = 1
         #Если двжемся по оси Х
         if u[1] == 0:
-            real_pos[(real_pos_buf[1]-u[1]) % len(p)][(real_pos_buf[0]-u[0]-1) % len(p)] = 1
+            real_pos[(real_pos_buf[1]-u[1]) % len(p)][(real_pos_buf[0]-u[0]-1) % len(p[0])] = 1
         #Если двжемся по диагонали 
         if u[1] != 0 and u[0] != 0:
-            real_pos[(real_pos_buf[1]-u[1]-1) % len(p)][(real_pos_buf[0]-u[0]-1) % len(p)] = 1
+            real_pos[(real_pos_buf[1]-u[1]-1) % len(p)][(real_pos_buf[0]-u[0]-1) % len(p[0])] = 1
     else:
-        real_pos[(real_pos_buf[1]-u[1]) % len(p)][(real_pos_buf[0]-u[0]) % len(p)] = 1
+        real_pos[(real_pos_buf[1]-u[1]) % len(p)][(real_pos_buf[0]-u[0]) % len(p[0])] = 1
  
     print(p, sep='\n')
     print('------------------')

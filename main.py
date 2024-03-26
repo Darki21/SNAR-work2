@@ -131,8 +131,10 @@ def generate_new_world_map(rows, columns, c, tile_x, tile_y):
             # select colour
             if c[i][j] == 'r':
                 tile_colour = "red"
-            else:
+            elif c[i][j] == 'g':
                 tile_colour = "green"
+            else:
+                tile_colour = 'black'
 
             # draw tile
             canvas_world.create_rectangle(tile_pos_x,
@@ -189,13 +191,16 @@ def refresh(tile_x, tile_y):
     # созданные выше x и y не используются, чтобы было наглядно
     rows = int(stringvar_field_rows.get())
     columns = int(stringvar_field_columns.get())
+
     # start position (x, y) (indexes of the tile)
     position = generate_random_start_position(rows, columns)
     print("Где заспавнился робот: ", position[0], ";", position[1])
+
     # probability matrix
     probability = field_generate_start_probabilities(rows, columns)
     print("Новая сгенерированная матрица вероятностей:")
     print_matrix(probability, rows, columns)
+
     # colour map
     colour_map = field_generate_colour(rows, columns)
     print("Новая цветовая карта: ")
@@ -239,7 +244,7 @@ def refresh_sense_data():
 
     # в зависимости от шанса решаем, датчик нам показал правду (не меняем sensor_measurement) или соврал
     # (меняем sensor_measurement на противоположное)
-    if sense_chance > pHit:
+    if sense_chance < pMiss:
         if sensor_measurement == 'r':
             sensor_measurement = 'g'
         else:
@@ -250,19 +255,33 @@ def refresh_sense_data():
         message += ' '
         message += event_cases["sense_red"]
         stringvar_events.set(message)
-    else:
+    elif sensor_measurement == 'g':
         message = take_system_time()
         message += ' '
         message += event_cases["sense_green"]
         stringvar_events.set(message)
+    else:
+        message = take_system_time()
+        message += ' '
+        message += event_cases["sense_black"]
+        stringvar_events.set(message)
+        
+
     print("Зритель видит, что робот стоит на клетке с индексами: ", position[0], "; ", position[1])
     print("Показание датчика: ", sensor_measurement)
+
     # пересчёт матрицы распределения вероятностей
     probability = sense(probability, sensor_measurement, colour_map)
     print("Обновлённая матрица распределения вероятностей:")
-    generate_new_probability_matrix(int(stringvar_field_rows.get()), int(stringvar_field_columns.get()), probability,
+
+    generate_new_probability_matrix(int(stringvar_field_rows.get()), 
+                                    int(stringvar_field_columns.get()), 
+                                    probability,
                                     tile_size_x, tile_size_y)
-    print_matrix(probability, int(stringvar_field_rows.get()), int(stringvar_field_columns.get()))
+    print_matrix(probability, 
+                 int(stringvar_field_rows.get()), 
+                 int(stringvar_field_columns.get()))
+    
     root.after(4000, refresh_sense_data)
 
 
@@ -283,8 +302,8 @@ def step_up():
     # учёт того, что может быть либо успех, либо неуспех; 2 случая неуспеха: оставлись на месте, переместились на 2
     # шансы те же что в функции move
     pExact = 0.8
-    # pOvershoot = 0.1
-    # pUndershoot = 0.1
+    pOvershoot = 0.1
+    pUndershoot = 0.1
 
     # шанс -- это не получка и не аванс
     movement_chance = random()
@@ -292,6 +311,19 @@ def step_up():
     # успех
     if movement_chance < pExact:
         u = shift_cases["up"]
+        if colour_map[position[1]+u[1]][position[0]+u[0]] == "b":
+
+            put_robot_in_the_world(position, tile_size_x, tile_size_y)
+
+            message = take_system_time()
+            message += ' '
+            message += event_cases["wall"]
+            stringvar_events.set(message)
+            
+            print("Зритель видит, что робот не сдвинулся ")
+            return None
+
+            
         position[0] += u[0]
         position[1] += u[1]
 
@@ -308,44 +340,94 @@ def step_up():
     # неуспех
     # надо выбрать, какой из двух неуспехов
     # два варианта неуспеха равновероятны между собой, поэтом сравнение идёт с 0.5
+    
+    elif movement_chance < pExact + pUndershoot:
+        # не перемещаемся
+        
+        u = shift_cases["up"]
+
+        if colour_map[(position[1]+u[1])%len(colour_map)][(position[0]+u[0])%len(colour_map[0])] == "b":
+
+            put_robot_in_the_world(position, tile_size_x, tile_size_y)
+
+            message = take_system_time()
+            message += ' '
+            message += event_cases["wall"]
+            stringvar_events.set(message)
+            
+            print("Зритель видит, что робот не сдвинулся ")
+            return None
+        
+        u = shift_cases["none"]
+        message = take_system_time()
+        message += ' '
+        message += event_cases["move_up_fail_undershoot"]
+        stringvar_events.set(message)
+
+        
     else:
+        u = shift_cases["up"]
 
-        movement_chance = random()
+        if colour_map[position[1]+u[1]][position[0]+u[0]] == "b":
 
-        # остались на месте
-        if movement_chance >= 0.5:
-            # не перемещаемся
-            u = shift_cases["none"]
-            message = take_system_time()
-            message += ' '
-            message += event_cases["move_up_fail_undershoot"]
-            stringvar_events.set(message)
-
-        # сместились на две клетки
-        else:
-            u = shift_cases["up"]
-            position[0] += u[0]
-            position[1] += u[1]
-
-            if position[1] < 0:
-                position[1] = int(stringvar_field_rows.get()) - 1
-
-            u = shift_cases["up"]
-            position[0] += u[0]
-            position[1] += u[1]
-
-            if position[1] < 0:
-                position[1] = int(stringvar_field_rows.get()) - 1
+            put_robot_in_the_world(position, tile_size_x, tile_size_y)
 
             message = take_system_time()
             message += ' '
-            message += event_cases["move_up_fail_overshoot"]
+            message += event_cases["wall"]
             stringvar_events.set(message)
+            
+            print("Зритель видит, что робот не сдвинулся ")
+            return None
+
+        position[0] += u[0]
+        position[1] += u[1]
+
+        if position[1] < 0:
+            position[1] = int(stringvar_field_rows.get()) - 1
+
+        u = shift_cases["up"]
+
+        if colour_map[position[1]+u[1]][position[0]+u[0]] == "b":
+
+            probability = move(probability, u)
+
+            message = take_system_time()
+            message += ' '
+            message += event_cases["hitting_the_wall"]
+            stringvar_events.set(message)
+            
+
+            put_robot_in_the_world(position, tile_size_x, tile_size_y)
+            
+            generate_new_probability_matrix(int(stringvar_field_rows.get()),
+                                            int(stringvar_field_columns.get()),
+                                            probability, tile_size_x, tile_size_y)
+
+            print("Зритель видит, что робот встал на позицию ", position[0], ";", position[1])
+            print("Обновлённая матрица вероятностей: ")
+            print(probability)
+
+            return None
+        
+        position[0] += u[0]
+        position[1] += u[1]
+
+        if position[1] < 0:
+            position[1] = int(stringvar_field_rows.get()) - 1
+
+        message = take_system_time()
+        message += ' '
+        message += event_cases["move_up_fail_overshoot"]
+        stringvar_events.set(message)
+    
 
     probability = move(probability, u)
 
     put_robot_in_the_world(position, tile_size_x, tile_size_y)
-    generate_new_probability_matrix(int(stringvar_field_rows.get()), int(stringvar_field_columns.get()),
+    
+    generate_new_probability_matrix(int(stringvar_field_rows.get()),
+                                     int(stringvar_field_columns.get()),
                                     probability, tile_size_x, tile_size_y)
 
     print("Зритель видит, что робот встал на позицию ", position[0], ";", position[1])
@@ -367,16 +449,31 @@ def step_down():
     canvas_matrix.delete("all")
 
     pExact = 0.8
+    pOvershoot = 0.1
+    pUndershoot = 0.1
     movement_chance = random()
 
     # успех
     if movement_chance < pExact:
         u = shift_cases["down"]
+
+        if colour_map[(position[1]+u[1])%len(colour_map)][(position[0]+u[0])%len(colour_map[0])] == "b":
+
+            put_robot_in_the_world(position, tile_size_x, tile_size_y)
+
+            message = take_system_time()
+            message += ' '
+            message += event_cases["wall"]
+            stringvar_events.set(message)
+            
+            print("Зритель видит, что робот не сдвинулся ")
+            return None
+        
         position[0] += u[0]
         position[1] += u[1]
 
         # пересчёт, если вышли за границу
-        if position[1] == int(stringvar_field_rows.get()):
+        if position[1] >= int(stringvar_field_rows.get()):
             position[1] = 0
 
         message = take_system_time()
@@ -384,46 +481,92 @@ def step_down():
         message += event_cases["move_down_success"]
         stringvar_events.set(message)
 
-    # неуспех
+    # не перемещаемся
+    elif movement_chance < pExact + pUndershoot:
+       
+        u = shift_cases["down"]
+
+        if colour_map[(position[1]+u[1])%len(colour_map)][(position[0]+u[0])%len(colour_map[0])] == "b":
+
+            put_robot_in_the_world(position, tile_size_x, tile_size_y)
+
+            message = take_system_time()
+            message += ' '
+            message += event_cases["wall"]
+            stringvar_events.set(message)
+            
+            print("Зритель видит, что робот не сдвинулся ")
+            return None
+        
+        u = shift_cases["none"]
+        message = take_system_time()
+        message += ' '
+        message += event_cases["move_down_fail_undershoot"]
+        stringvar_events.set(message)
+
+        
     else:
-        movement_chance = random()
+        u = shift_cases["down"]
 
-        # остались на месте
-        if movement_chance <= 0.5:
-            # не перемещаемся
-            u = shift_cases["none"]
-            message = take_system_time()
-            message += ' '
-            message += event_cases["move_down_fail_undershoot"]
-            stringvar_events.set(message)
+        if colour_map[(position[1]+u[1])%len(colour_map)][(position[0]+u[0])%len(colour_map[0])] == "b":
 
-        # сместились на две клетки
-        else:
-            u = shift_cases["down"]
-            position[0] += u[0]
-            position[1] += u[1]
-
-            # пересчёт, если вышли за границу
-            if position[1] == int(stringvar_field_rows.get()):
-                position[1] = 0
-
-            u = shift_cases["down"]
-            position[0] += u[0]
-            position[1] += u[1]
-
-            # пересчёт, если вышли за границу
-            if position[1] == int(stringvar_field_rows.get()):
-                position[1] = 0
+            put_robot_in_the_world(position, tile_size_x, tile_size_y)
 
             message = take_system_time()
             message += ' '
-            message += event_cases["move_down_fail_overshoot"]
+            message += event_cases["wall"]
             stringvar_events.set(message)
+            
+            print("Зритель видит, что робот не сдвинулся ")
+            return None
+        
+        position[0] += u[0]
+        position[1] += u[1]
 
+        if position[1] >= int(stringvar_field_rows.get()):
+            position[1] = 0
+
+        u = shift_cases["down"]
+
+        if colour_map[(position[1]+u[1])%len(colour_map)][(position[0]+u[0])%len(colour_map[0])] == "b":
+
+            probability = move(probability, u)
+
+            message = take_system_time()
+            message += ' '
+            message += event_cases["hitting_the_wall"]
+            stringvar_events.set(message)
+            
+
+            put_robot_in_the_world(position, tile_size_x, tile_size_y)
+            
+            generate_new_probability_matrix(int(stringvar_field_rows.get()),
+                                            int(stringvar_field_columns.get()),
+                                            probability, tile_size_x, tile_size_y)
+
+            print("Зритель видит, что робот встал на позицию ", position[0], ";", position[1])
+            print("Обновлённая матрица вероятностей: ")
+            print(probability)
+
+            return None
+        
+        position[0] += u[0]
+        position[1] += u[1]
+
+        if position[1] >= int(stringvar_field_rows.get()):
+            position[1] = 0
+
+        message = take_system_time()
+        message += ' '
+        message += event_cases["move_down_fail_overshoot"]
+        stringvar_events.set(message)
+    
     probability = move(probability, u)
 
     put_robot_in_the_world(position, tile_size_x, tile_size_y)
-    generate_new_probability_matrix(int(stringvar_field_rows.get()), int(stringvar_field_columns.get()),
+
+    generate_new_probability_matrix(int(stringvar_field_rows.get()), 
+                                    int(stringvar_field_columns.get()),
                                     probability, tile_size_x, tile_size_y)
 
     print("Зритель видит, что робот встал на позицию ", position[0], ";", position[1])
@@ -445,12 +588,27 @@ def step_left():
     canvas_matrix.delete("all")
 
     pExact = 0.8
+    pOvershoot = 0.1
+    pUndershoot = 0.1
     movement_chance = random()
 
     # успех
     if movement_chance < pExact:
 
         u = shift_cases["left"]
+
+        if colour_map[position[1]+u[1]][position[0]+u[0]] == "b":
+
+            put_robot_in_the_world(position, tile_size_x, tile_size_y)
+
+            message = take_system_time()
+            message += ' '
+            message += event_cases["wall"]
+            stringvar_events.set(message)
+            
+            print("Зритель видит, что робот не сдвинулся ")
+            return None
+        
         position[0] += u[0]
         position[1] += u[1]
 
@@ -463,47 +621,91 @@ def step_left():
         message += event_cases["move_left_success"]
         stringvar_events.set(message)
 
-    # неуспех
+    elif movement_chance < pExact + pUndershoot:
+        # не перемещаемся
+        u = shift_cases["left"]
+
+        if colour_map[(position[1]+u[1])%len(colour_map)][(position[0]+u[0])%len(colour_map[0])] == "b":
+
+            put_robot_in_the_world(position, tile_size_x, tile_size_y)
+
+            message = take_system_time()
+            message += ' '
+            message += event_cases["wall"]
+            stringvar_events.set(message)
+            
+            print("Зритель видит, что робот не сдвинулся ")
+            return None
+        
+        u = shift_cases["none"]
+        message = take_system_time()
+        message += ' '
+        message += event_cases["move_left_fail_undershoot"]
+        stringvar_events.set(message)
+
+        
     else:
-        movement_chance = random()
+        u = shift_cases["left"]
 
-        # остались на месте
-        if movement_chance <= 0.5:
-            # не перемещаемся
-            u = shift_cases["none"]
-            message = take_system_time()
-            message += ' '
-            message += event_cases["move_left_fail_undershoot"]
-            stringvar_events.set(message)
-
-        # сместились на две клетки
-        else:
-
-            u = shift_cases["left"]
-            position[0] += u[0]
-            position[1] += u[1]
-
-            # пересчёт, если вышли за границу
-            if position[0] < 0:
-                position[0] = int(stringvar_field_columns.get()) - 1
-
-            u = shift_cases["left"]
-            position[0] += u[0]
-            position[1] += u[1]
-
-            # пересчёт, если вышли за границу
-            if position[0] < 0:
-                position[0] = int(stringvar_field_columns.get()) - 1
+        if colour_map[position[1]+u[1]][position[0]+u[0]] == "b":
+            
+            put_robot_in_the_world(position, tile_size_x, tile_size_y)
 
             message = take_system_time()
             message += ' '
-            message += event_cases["move_left_fail_overshoot"]
+            message += event_cases["wall"]
             stringvar_events.set(message)
+            
+            print("Зритель видит, что робот не сдвинулся ")
+            return None
+
+        position[0] += u[0]
+        position[1] += u[1]
+
+        if position[0] < 0:
+            position[0] = int(stringvar_field_rows.get()) - 1
+
+        u = shift_cases["left"]
+
+        if colour_map[position[1]+u[1]][position[0]+u[0]] == "b":
+
+            probability = move(probability, u)
+            message = take_system_time()
+            message += ' '
+            message += event_cases["hitting_the_wall"]
+            stringvar_events.set(message)
+            
+
+            put_robot_in_the_world(position, tile_size_x, tile_size_y)
+            
+            generate_new_probability_matrix(int(stringvar_field_rows.get()),
+                                            int(stringvar_field_columns.get()),
+                                            probability, tile_size_x, tile_size_y)
+
+            print("Зритель видит, что робот встал на позицию ", position[0], ";", position[1])
+            print("Обновлённая матрица вероятностей: ")
+            print(probability)
+
+            return None
+
+        position[0] += u[0]
+        position[1] += u[1]
+
+        if position[0] < 0:
+            position[0] = int(stringvar_field_rows.get()) - 1
+
+        message = take_system_time()
+        message += ' '
+        message += event_cases["move_left_fail_overshoot"]
+        stringvar_events.set(message)
+    
 
     probability = move(probability, u)
 
     put_robot_in_the_world(position, tile_size_x, tile_size_y)
-    generate_new_probability_matrix(int(stringvar_field_rows.get()), int(stringvar_field_columns.get()),
+
+    generate_new_probability_matrix(int(stringvar_field_rows.get()), 
+                                    int(stringvar_field_columns.get()),
                                     probability, tile_size_x, tile_size_y)
 
     print("Зритель видит, что робот встал на позицию ", position[0], ";", position[1])
@@ -525,17 +727,32 @@ def step_right():
     canvas_matrix.delete("all")
 
     pExact = 0.8
+    pOvershoot = 0.1
+    pUndershoot = 0.1
     movement_chance = random()
 
     # успех
     if movement_chance < pExact:
 
         u = shift_cases["right"]
+
+        if colour_map[(position[1]+u[1])%len(colour_map)][(position[0]+u[0])%len(colour_map[0])] == "b":
+
+            put_robot_in_the_world(position, tile_size_x, tile_size_y)
+
+            message = take_system_time()
+            message += ' '
+            message += event_cases["wall"]
+            stringvar_events.set(message)
+            
+            print("Зритель видит, что робот не сдвинулся ")
+            return None
+        
         position[0] += u[0]
         position[1] += u[1]
 
         # пересчёт, если вышли за границу
-        if position[0] == int(stringvar_field_columns.get()):
+        if position[0] >= int(stringvar_field_columns.get()):
             position[0] = 0
 
         message = take_system_time()
@@ -543,47 +760,94 @@ def step_right():
         message += event_cases["move_right_success"]
         stringvar_events.set(message)
 
-    # неуспех
+    # не перемещаемся
+    elif movement_chance < pExact + pUndershoot:
+        
+        
+        u = shift_cases["right"]
+
+        if colour_map[(position[1]+u[1])%len(colour_map)][(position[0]+u[0])%len(colour_map[0])] == "b":
+
+            put_robot_in_the_world(position, tile_size_x, tile_size_y)
+
+            message = take_system_time()
+            message += ' '
+            message += event_cases["wall"]
+            stringvar_events.set(message)
+            
+            print("Зритель видит, что робот не сдвинулся ")
+            return None
+        
+        u = shift_cases["none"]
+        message = take_system_time()
+        message += ' '
+        message += event_cases["move_right_fail_undershoot"]
+        stringvar_events.set(message)
+
+    # проскользил     
     else:
-        movement_chance = random()
+        u = shift_cases["right"]
 
-        # остались на месте
-        if movement_chance <= 0.5:
-            # не перемещаемся
-            u = shift_cases["none"]
-            message = take_system_time()
-            message += ' '
-            message += event_cases["move_right_fail_undershoot"]
-            stringvar_events.set(message)
+        if colour_map[(position[1]+u[1])%len(colour_map)][(position[0]+u[0])%len(colour_map[0])] == "b":
 
-        # сместились на две клетки
-        else:
-
-            u = shift_cases["right"]
-            position[0] += u[0]
-            position[1] += u[1]
-
-            # пересчёт, если вышли за границу
-            if position[0] == int(stringvar_field_columns.get()):
-                position[0] = 0
-
-            u = shift_cases["right"]
-            position[0] += u[0]
-            position[1] += u[1]
-
-            # пересчёт, если вышли за границу
-            if position[0] == int(stringvar_field_columns.get()):
-                position[0] = 0
+            put_robot_in_the_world(position, tile_size_x, tile_size_y)
 
             message = take_system_time()
             message += ' '
-            message += event_cases["move_right_fail_overshoot"]
+            message += event_cases["wall"]
             stringvar_events.set(message)
+            
+            print("Зритель видит, что робот не сдвинулся ")
+            return None
+        
+        position[0] += u[0]
+        position[1] += u[1]
+
+        if position[0]  >= int(stringvar_field_columns.get()):
+            position[0] = 0
+
+        u = shift_cases["right"]
+
+        if colour_map[(position[1]+u[1])%len(colour_map)][(position[0]+u[0])%len(colour_map[0])] == "b":
+
+            probability = move(probability, u)
+
+            message = take_system_time()
+            message += ' '
+            message += event_cases["hitting_the_wall"]
+            stringvar_events.set(message)
+            
+
+            put_robot_in_the_world(position, tile_size_x, tile_size_y)
+            
+            generate_new_probability_matrix(int(stringvar_field_rows.get()),
+                                            int(stringvar_field_columns.get()),
+                                            probability, tile_size_x, tile_size_y)
+
+            print("Зритель видит, что робот встал на позицию ", position[0], ";", position[1])
+            print("Обновлённая матрица вероятностей: ")
+            print(probability)
+
+            return None
+
+        position[0] += u[0]
+        position[1] += u[1]
+
+        if position[0]  >= int(stringvar_field_columns.get()):
+            print( int(stringvar_field_columns.get()))
+            position[0] = 0
+
+        message = take_system_time()
+        message += ' '
+        message += event_cases["move_right_fail_overshoot"]
+        stringvar_events.set(message)
+   
 
     probability = move(probability, u)
 
     put_robot_in_the_world(position, tile_size_x, tile_size_y)
-    generate_new_probability_matrix(int(stringvar_field_rows.get()), int(stringvar_field_columns.get()),
+    generate_new_probability_matrix(int(stringvar_field_rows.get()), 
+                                    int(stringvar_field_columns.get()),
                                     probability, tile_size_x, tile_size_y)
 
     print("Зритель видит, что робот встал на позицию ", position[0], ";", position[1])
@@ -595,6 +859,10 @@ def step_right():
 event_cases = {"init": "Симуляция запущена. Локация обновлена. Робот появился в случайном месте.",
                "sense_red": "Опрос датчика. Робот считает, что он на красной клетке.",
                "sense_green": "Опрос датчика. Робот считает, что он на зелёной клетке.",
+               "sense_black": "Опрос датчика. Робот считает, что он в стене?!",
+
+               "wall": "Впереди стена я не могу туда проехать",
+               "hitting_the_wall": "Врезались в стену",
 
                "move_up_success": "Следующий шаг траектории -- вверх. Успех",
                "move_up_fail_undershoot": "Следующий шаг траектории -- вверх. Неудача. Робот на месте.",
@@ -625,13 +893,16 @@ field_columns = 12
 # tile size
 tile_size_x = 50
 tile_size_y = 50
+
 # start position (x, y) (indexes of the tile)
 position = generate_random_start_position(field_rows, field_columns)
 print("Где заспавнился робот: ", position[0], ";", position[1])
+
 # probability matrix
 probability = field_generate_start_probabilities(field_rows, field_columns)
 print("Сгенерированная матрица: ")
 print_matrix(probability, field_rows, field_columns)
+
 # colour map
 colour_map = field_generate_colour(field_rows, field_columns)
 print("Цветовая карта: ")

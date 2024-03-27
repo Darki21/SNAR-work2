@@ -192,10 +192,6 @@ def refresh(tile_x, tile_y):
     rows = int(stringvar_field_rows.get())
     columns = int(stringvar_field_columns.get())
 
-    # start position (x, y) (indexes of the tile)
-    position = generate_random_start_position(rows, columns)
-    print("Где заспавнился робот: ", position[0], ";", position[1])
-
     # probability matrix
     probability = field_generate_start_probabilities(rows, columns)
     print("Новая сгенерированная матрица вероятностей:")
@@ -205,6 +201,10 @@ def refresh(tile_x, tile_y):
     colour_map = field_generate_colour(rows, columns)
     print("Новая цветовая карта: ")
     print_matrix(colour_map, rows, columns)
+
+    # start position (x, y) (indexes of the tile)
+    position = generate_random_start_position(rows, columns, colour_map)
+    print("Где заспавнился робот: ", position[0], ";", position[1])
 
     canvas_world.delete("all")
     generate_new_world_map(rows, columns, colour_map, tile_x, tile_y)
@@ -314,6 +314,9 @@ def step_up():
         if colour_map[position[1]+u[1]][position[0]+u[0]] == "b":
 
             put_robot_in_the_world(position, tile_size_x, tile_size_y)
+            generate_new_probability_matrix(int(stringvar_field_rows.get()),
+                                            int(stringvar_field_columns.get()),
+                                            probability, tile_size_x, tile_size_y)
 
             message = take_system_time()
             message += ' '
@@ -349,6 +352,9 @@ def step_up():
         if colour_map[(position[1]+u[1])%len(colour_map)][(position[0]+u[0])%len(colour_map[0])] == "b":
 
             put_robot_in_the_world(position, tile_size_x, tile_size_y)
+            generate_new_probability_matrix(int(stringvar_field_rows.get()),
+                                            int(stringvar_field_columns.get()),
+                                            probability, tile_size_x, tile_size_y)
 
             message = take_system_time()
             message += ' '
@@ -371,6 +377,9 @@ def step_up():
         if colour_map[position[1]+u[1]][position[0]+u[0]] == "b":
 
             put_robot_in_the_world(position, tile_size_x, tile_size_y)
+            generate_new_probability_matrix(int(stringvar_field_rows.get()),
+                                            int(stringvar_field_columns.get()),
+                                            probability, tile_size_x, tile_size_y)
 
             message = take_system_time()
             message += ' '
@@ -460,6 +469,9 @@ def step_down():
         if colour_map[(position[1]+u[1])%len(colour_map)][(position[0]+u[0])%len(colour_map[0])] == "b":
 
             put_robot_in_the_world(position, tile_size_x, tile_size_y)
+            generate_new_probability_matrix(int(stringvar_field_rows.get()),
+                                            int(stringvar_field_columns.get()),
+                                            probability, tile_size_x, tile_size_y)
 
             message = take_system_time()
             message += ' '
@@ -489,6 +501,9 @@ def step_down():
         if colour_map[(position[1]+u[1])%len(colour_map)][(position[0]+u[0])%len(colour_map[0])] == "b":
 
             put_robot_in_the_world(position, tile_size_x, tile_size_y)
+            generate_new_probability_matrix(int(stringvar_field_rows.get()),
+                                            int(stringvar_field_columns.get()),
+                                            probability, tile_size_x, tile_size_y)
 
             message = take_system_time()
             message += ' '
@@ -511,6 +526,9 @@ def step_down():
         if colour_map[(position[1]+u[1])%len(colour_map)][(position[0]+u[0])%len(colour_map[0])] == "b":
 
             put_robot_in_the_world(position, tile_size_x, tile_size_y)
+            generate_new_probability_matrix(int(stringvar_field_rows.get()),
+                                            int(stringvar_field_columns.get()),
+                                            probability, tile_size_x, tile_size_y)
 
             message = take_system_time()
             message += ' '
@@ -600,6 +618,9 @@ def step_left():
         if colour_map[position[1]+u[1]][position[0]+u[0]] == "b":
 
             put_robot_in_the_world(position, tile_size_x, tile_size_y)
+            generate_new_probability_matrix(int(stringvar_field_rows.get()),
+                                            int(stringvar_field_columns.get()),
+                                            probability, tile_size_x, tile_size_y)
 
             message = take_system_time()
             message += ' '
@@ -628,6 +649,9 @@ def step_left():
         if colour_map[(position[1]+u[1])%len(colour_map)][(position[0]+u[0])%len(colour_map[0])] == "b":
 
             put_robot_in_the_world(position, tile_size_x, tile_size_y)
+            generate_new_probability_matrix(int(stringvar_field_rows.get()),
+                                            int(stringvar_field_columns.get()),
+                                            probability, tile_size_x, tile_size_y)
 
             message = take_system_time()
             message += ' '
@@ -650,6 +674,9 @@ def step_left():
         if colour_map[position[1]+u[1]][position[0]+u[0]] == "b":
             
             put_robot_in_the_world(position, tile_size_x, tile_size_y)
+            generate_new_probability_matrix(int(stringvar_field_rows.get()),
+                                            int(stringvar_field_columns.get()),
+                                            probability, tile_size_x, tile_size_y)
 
             message = take_system_time()
             message += ' '
@@ -739,6 +766,9 @@ def step_right():
         if colour_map[(position[1]+u[1])%len(colour_map)][(position[0]+u[0])%len(colour_map[0])] == "b":
 
             put_robot_in_the_world(position, tile_size_x, tile_size_y)
+            generate_new_probability_matrix(int(stringvar_field_rows.get()),
+                                            int(stringvar_field_columns.get()),
+                                            probability, tile_size_x, tile_size_y)
 
             message = take_system_time()
             message += ' '
@@ -769,6 +799,9 @@ def step_right():
         if colour_map[(position[1]+u[1])%len(colour_map)][(position[0]+u[0])%len(colour_map[0])] == "b":
 
             put_robot_in_the_world(position, tile_size_x, tile_size_y)
+            generate_new_probability_matrix(int(stringvar_field_rows.get()),
+                                            int(stringvar_field_columns.get()),
+                                            probability, tile_size_x, tile_size_y)
 
             message = take_system_time()
             message += ' '
@@ -791,6 +824,9 @@ def step_right():
         if colour_map[(position[1]+u[1])%len(colour_map)][(position[0]+u[0])%len(colour_map[0])] == "b":
 
             put_robot_in_the_world(position, tile_size_x, tile_size_y)
+            generate_new_probability_matrix(int(stringvar_field_rows.get()),
+                                            int(stringvar_field_columns.get()),
+                                            probability, tile_size_x, tile_size_y)
 
             message = take_system_time()
             message += ' '
@@ -894,10 +930,6 @@ field_columns = 12
 tile_size_x = 50
 tile_size_y = 50
 
-# start position (x, y) (indexes of the tile)
-position = generate_random_start_position(field_rows, field_columns)
-print("Где заспавнился робот: ", position[0], ";", position[1])
-
 # probability matrix
 probability = field_generate_start_probabilities(field_rows, field_columns)
 print("Сгенерированная матрица: ")
@@ -907,6 +939,10 @@ print_matrix(probability, field_rows, field_columns)
 colour_map = field_generate_colour(field_rows, field_columns)
 print("Цветовая карта: ")
 print_matrix(colour_map, field_rows, field_columns)
+
+# start position (x, y) (indexes of the tile)
+position = generate_random_start_position(field_rows, field_columns, colour_map)
+print("Где заспавнился робот: ", position[0], ";", position[1])
 
 # create main window
 root = tk.Tk()

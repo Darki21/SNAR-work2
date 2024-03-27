@@ -1,4 +1,4 @@
-def move(p, U, pExact = 0.8, pOvershoot = 0.1, pUndershoot = 0.1):
+def move(p, U, color_matrix, pExact = 0.8, pOvershoot = 0.1, pUndershoot = 0.1):
     """
     Реализация гипотетического движения с попыткой сохранить данные об окружении
 
@@ -42,4 +42,9 @@ def move(p, U, pExact = 0.8, pOvershoot = 0.1, pUndershoot = 0.1):
                 s += pUndershoot * p[(y - U[1] + 1) % len(p)][(x - U[0] + 1) % len(p[y])]
             p_buf.append(round(s, 4))
         p_new.append(p_buf)
+
+        # for i in range(len(p_new)):
+        #     for j in range(len(p_new[i])):
+        #         if color_matrix[i][j] == 'b':
+        #             p_new[i][j] = 0.0
     return p_new

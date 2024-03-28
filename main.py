@@ -957,7 +957,7 @@ frame_options = ttk.Labelframe(root,
                                text="Опции",
                                relief=tk.SOLID)
 frame_matrix = ttk.LabelFrame(root,
-                              text="Матрица распределени вероятностей",
+                              text="Матрица распределения вероятностей",
                               relief=tk.SOLID)
 
 frame_world = ttk.LabelFrame(root,

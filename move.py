@@ -29,11 +29,15 @@ def move(p, U, color_matrix, pExact = 0.8, pOvershoot = 0.1, pUndershoot = 0.1):
             if U[0] == 0:
                 s += pOvershoot * p[(y - U[1] - 1) % len(p)][(x - U[0]) % len(p)]
                 s += pUndershoot * p[(y - U[1] + 1) % len(p)][(x - U[0]) % len(p)]
-            # Если движемся по оси Х
+                # s += pOvershoot * p[(y - U[1]) % len(p)][(x - U[0] - 1) % len(p[y])]
+                # s += pUndershoot * p[(y - U[1]) % len(p)][(x - U[0] + 1) % len(p[y])]
+            # Если двжемся по оси Х
             if U[1] == 0:
                 s += pOvershoot * p[(y - U[1]) % len(p)][(x - U[0] - 1) % len(p[y])]
                 s += pUndershoot * p[(y - U[1]) % len(p)][(x - U[0] + 1) % len(p[y])]
-            # Если движемся по диагонали
+                # s += pOvershoot * p[(y - U[1] - 1) % len(p)][(x - U[0]) % len(p)]
+                # s += pUndershoot * p[(y - U[1] + 1) % len(p)][(x - U[0]) % len(p)]
+            # Если двжемся по диагонали
             if U[1] != 0 and U[0] != 0:
                 s += pOvershoot * p[(y - U[1] - 1) % len(p)][(x - U[0] - 1) % len(p[y])]
                 s += pUndershoot * p[(y - U[1] + 1) % len(p)][(x - U[0] + 1) % len(p[y])]

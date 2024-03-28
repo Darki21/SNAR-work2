@@ -284,7 +284,7 @@ def refresh_sense_data():
                  int(stringvar_field_rows.get()), 
                  int(stringvar_field_columns.get()))
     
-    root.after(4000, refresh_sense_data)
+    root.after(400, refresh_sense_data)
 
 
 # movement
